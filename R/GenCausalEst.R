@@ -10,7 +10,7 @@
 #' @param trun.alpha the truncation threshold; default is .05
 #' @param boot whether to implement bootstrap for variance estimation; default is TRUE
 #' @param n.boot number of bootstrap, if boot==TRUE; default is 500
-#' @param conf.level level of confidence interval; default is .05 (for 95% confidence interval, using normal approximation)
+#' @param conf.level level of confidence interval; default is .05 (for 0.95 confidence interval, using normal approximation)
 #' @return the function returns estimated causal estimands using observational data;
 #'         estimands defined by constant weights, overlap weights, matching weights and entropy weights will always be returned;
 #'         whether to return estimands defined by trimming, truncation, and beta weights can be specified by user

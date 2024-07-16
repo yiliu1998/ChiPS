@@ -42,7 +42,7 @@ Gen_Estimand(
 
 \item{n.boot}{number of bootstrap, if boot==TRUE; default is 500}
 
-\item{conf.level}{level of confidence interval; default is .05 (for 95% confidence interval, using normal approximation)}
+\item{conf.level}{level of confidence interval; default is .05 (for 0.95 confidence interval, using normal approximation)}
 }
 \value{
 the function returns estimated causal estimands using observational data;
