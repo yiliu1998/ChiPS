@@ -9,5 +9,13 @@ if (!require("devtools")) install.packages("devtools")
 devtools::install_github("yiliu1998/General-Estimands")
 ```
 
+## Use
+The package contains only a main function `Gen_Estimand()` for use. The input data of the function should be observational data with a binary treatment (`A`, valued from 0 and 1), an outcome variable (`Y`) and covariate matrix or data frame (`X`). Once the package is downloaded, please use the following code to view more detailed use of the package:
+
+```r
+library(GenCausalEst)
+?Gen_Estimand
+```
+
 ## Contact
 The R code is maintained by Yi Liu (Please feel free to reach out at yi.liu.biostat[at]gmail[dot]com, if you have any questions).
