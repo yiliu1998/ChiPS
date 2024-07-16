@@ -1,0 +1,25 @@
+Package: GenCausalEst
+Type: Package
+Title: Estimation and Inference for General Causal Estimands
+Version: 1.1
+Authors@R: c(
+  	person("Yi", "Liu", 
+			email="yi.iu.biostat@gmail.com", 
+			ole=c("aut", "cre"),
+			comment=c(ORCID="0000-0002-0935-007X")),
+	person("Yuan", "Wang", 
+			email="2000yuan.wang@gmail.com", 
+			role="aut"),
+	person("Roland", "Matsouaka", 
+			email="roland.matsouaka@duke.edu", 
+			role="aut",
+			comment=c(ORCID="0000-0002-0271-5400")))
+Maintainer: Yi Liu <yi.iu.biostat@gmail.com>
+Description: The package implements the propensity score weighted estimators and bootstrap variance estimation 
+             for a number of weighted average treatment effect (WATE), weighted average treatment effect
+	     on the treated (WATT) and weighted average treatment effect on the controls (WATC) estimands 
+             in causal inference. 
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.2
