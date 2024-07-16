@@ -16,7 +16,7 @@ The package contains only a main function `Gen_Estimand()` for use. The input da
 library(GenCausalEst)
 ?Gen_Estimand
 ```
-In addition, please note that \textbf{we do not allow missing data} in the dataset for implementing our function. Therefore, if the data contains any missing values, we suggest either to conduct a complete-case analysis (e.g., if the missingness rate is small), or impute the missing data first. 
+In addition, please note that **we do not allow missing data** in the dataset for implementing our function. Therefore, if the data contains any missing values, we suggest either to conduct a complete-case analysis (e.g., if the missingness rate is small), or impute the missing data first. 
 
 ## Contact
 The R code is maintained by Yi Liu (Please feel free to reach out at yi.liu.biostat[at]gmail[dot]com, if you have any questions).
