@@ -47,9 +47,9 @@ Gen_Estimand <- function(A, Y, X,
 
       if(i%%50==0) print(paste0("Bootstrap ", i, " is done."))
     }
-    sd.wate <- sqrt(apply(wate.all, 2, var) / n)
-    sd.watt <- sqrt(apply(watt.all, 2, var) / n)
-    sd.watc <- sqrt(apply(watc.all, 2, var) / n)
+    sd.wate <- sqrt(apply(wate.all, 2, var))
+    sd.watt <- sqrt(apply(watt.all, 2, var))
+    sd.watc <- sqrt(apply(watc.all, 2, var))
 
     quant <- qnorm(1-conf.level/2)
 
