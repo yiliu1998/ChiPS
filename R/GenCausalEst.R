@@ -88,18 +88,21 @@ Gen_Estimand <- function(A, Y, X,
 
   if(beta) {
     v <- v[!is.na(v)]
-    weights <- c(weights, paste0("beta (v=", v, ")"))
-    tilt.beta <- matrix(NA, nrow=n, ncol=length(v))
-    for(i in 1:length(v)) {
-      tilt.beta[,i] <- e.h^v[i]*(1-e.h)^v[i]
+    if(length(v)>0) {
+      weights <- c(weights, paste0("beta (v=", v, ")"))
+      tilt.beta <- matrix(NA, nrow=n, ncol=length(v))
+      for(i in 1:length(v)) {
+        tilt.beta[,i] <- e.h^v[i]*(1-e.h)^v[i]
+      }
+      tilt.wate <- cbind(tilt.wate, tilt.beta)
+      tilt.watt <- cbind(tilt.watt, tilt.beta)
+      tilt.watc <- cbind(tilt.watc, tilt.beta)
     }
-    tilt.wate <- cbind(tilt.wate, tilt.beta)
-    tilt.watt <- cbind(tilt.watt, tilt.beta)
-    tilt.watc <- cbind(tilt.watc, tilt.beta)
   }
 
   if(trim) {
-    if(!is.na(trim.alpha)) {
+    trim.alpha <- trim.alpha[!is.na(trim.alpha)]
+    if(length(trim.alpha)>0) {
       weights <- c(weights, paste0("trimming (alpha=", trim.alpha, ")"))
       tilt.trim.wate <- tilt.trim.watt <- tilt.trim.watc <-
         matrix(NA, nrow=n, ncol=length(trim.alpha))
@@ -107,7 +110,7 @@ Gen_Estimand <- function(A, Y, X,
         tilt.trim.wate[,i] <- as.numeric(e.h<1-trim.alpha[i] & e.h>trim.alpha[i])
         tilt.trim.watt[,i] <- as.numeric(e.h<1-trim.alpha[i])*(1-A) + A
         tilt.trim.watc[,i] <- as.numeric(e.h>trim.alpha[i])*A + (1-A)
-      }
+    }
       tilt.wate <- cbind(tilt.wate, tilt.trim.wate)
       tilt.watt <- cbind(tilt.watt, tilt.trim.watt)
       tilt.watc <- cbind(tilt.watc, tilt.trim.watc)
@@ -115,7 +118,8 @@ Gen_Estimand <- function(A, Y, X,
   }
 
   if(trun) {
-    if(!is.na(trun.alpha)) {
+    trun.alpha <- trun.alpha[!is.na(trun.alpha)]
+    if(length(trun.alpha)>0) {
       weights <- c(weights, paste0("truncation (alpha=", trun.alpha, ")"))
       tilt.trun.wate <- tilt.trun.watt <- tilt.trun.watc <-
         matrix(NA, nrow=n, ncol=length(trun.alpha))
