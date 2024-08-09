@@ -9,7 +9,7 @@ if (!require("devtools")) install.packages("devtools")
 devtools::install_github("yiliu1998/General-Estimands")
 ```
 
-## Use
+## Usage
 The package contains only a main function `Gen_Estimand()` for use. The input data of the function should be observational data with a binary treatment (`A`, valued from 0 and 1), an outcome variable (`Y`) and covariate matrix or data frame (`X`). Once the package is downloaded, please use the following code to view more detailed use of the package:
 
 ```r
