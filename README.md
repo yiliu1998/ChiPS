@@ -19,4 +19,4 @@ library(GenCausalEst)
 In addition, please note that **we do not allow missing data** in the dataset for implementing our function. Therefore, if your data contain any missing values, we suggest either to conduct a complete-case analysis (e.g., if the missingness rate is small), or impute the missing data first. 
 
 ## Contact
-The R code is maintained by Yi Liu (Please feel free to reach out at yi.liu.biostat[at]gmail[dot]com, if you have any questions).
+The R code is maintained by Yi Liu (Please feel free to reach out at yi.liu.biostat@gmail.com, if you have any questions).
