@@ -1,5 +1,5 @@
-# ChiPS
-`ChiPS` is an R package that implements the estimation of general causal estimands in observational study using propensity score weighting estimators. We employ two ways for the causal effect estimations:
+# Chips
+`Chips` is an R package that implements the estimation of general causal estimands in observational study using propensity score weighting estimators. We employ two ways for the causal effect estimations:
 
 - Estimate the propensity scores using some posited models (we allow traditional models such as a logistic regression or nonparametric models through the SuperLearner) and plug it in to the 
 
