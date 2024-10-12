@@ -1,5 +1,5 @@
 # Chips
-`Chips` is an R package that implements the estimation of general causal estimands in observational study using propensity score weighting (PSW) estimators. We employ two ways for the estimation:
+`Chips` is an R package that implements the estimation of general causal estimands using the propensity score weighted (PSW) estimators. We employ two ways for the estimation:
 
 - Model the propensity scores using the whole dataset, predict the propensity score values on all participants (estimate-then-plug-in), and calculate the PSW estimator. The variance estimation is by nonparametric bootstrap (see [Efron (1992)](https://link.springer.com/chapter/10.1007/978-1-4612-4380-9_41)).
 - Employ the double/debiased machine learning (DML) algorithms by [Chernozhukov et al. (2018)](https://academic.oup.com/ectj/article/21/1/C1/5056401) for propensity score modelling on training sets and predicting on prediction set, using multiple sample-spltting and cross-fitting. This is called the DML-based PSW estimator in our paper. The variance estimation for this DML-based estimator is direct using the mean square of the influnce function. 
