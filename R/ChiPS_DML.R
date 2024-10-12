@@ -1,17 +1,19 @@
 #' Causal inference via general estimands: the weighted ATE, weighted ATT and weighted ATC
 #' @param A vector of the treatment variable (binary, valued from 0 and 1)
 #' @param Y vector of the outcome variable (can be various types: continous, categorical, etc., but must be numerical)
-#' @param X matrix of the covariates that included into the propensity score model
+#' @param X matrix of covariates/confounders that are included into the propensity score model
+#' @param ps.library methods used for fitting the propensity score model, adopted from the SuperLearner package
 #' @param beta whether to include estimands from beta family weights; if so, the v parameter below is required to be specified
 #' @param v model parameter for beta weights
 #' @param trim whether to include trimming; if so, the trim.alpha parameter below needs to be specified
 #' @param trim.alpha the trimming threshold; default is .05
 #' @param trun whether to include truncation; if so, the trun.alpha parameter below needs to be specified
 #' @param trun.alpha the truncation threshold; default is .05
-#' @param boot whether to implement bootstrap for variance estimation; default is TRUE
-#' @param n.boot number of bootstrap, if boot==TRUE; default is 500
+#' @param n.folds number of data folds by each sample-splitting replication; default is 5
+#' @param n.split number of sample-splitting replications; default is 10
+#' @param seed seed for initializing the random number generator, which is used in set.seed() function; default is 4399
 #' @param conf.level level of confidence interval; default is .05 (for 0.95 confidence interval, using normal approximation)
-#' @return the function returns estimated causal estimands using observational data;
+#' @return the function returns estimated causal estimands;
 #'         estimands defined by constant weights, overlap weights, matching weights and entropy weights will always be returned;
 #'         whether to return estimands defined by trimming, truncation, and beta weights can be specified by user
 Chips_DML <- function(A, Y, X, ps.library="glm",
