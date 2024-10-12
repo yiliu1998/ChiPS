@@ -1,4 +1,4 @@
-Package: Chips
+Package: ChiPS
 Type: Package
 Title: Choosing Propensity Score Weights from General Classes of Estimands
 Version: 1.1
@@ -18,16 +18,11 @@ Authors@R: c(
 			role="aut",
 			comment=c(ORCID="0000-0002-0271-5400")))
 Maintainer: Yi Liu <yi.iu.biostat@gmail.com>
-Description: The package implements the propensity score weighted estimators for several causal estimands from 
-	     the classes of weighted ATE, weighted ATT and weighted ATC. We employ two ways for inference: 
-	     (i) the more traditional estimate-then-plug-in for estimating propensity scores using the whole dataset 
-	     and then plug-in the estimator formula to get the point estimates, and the variance is estimated by bootstrap;
-	     and (ii) applying sample-splitting and cross-fitting and using the mean square of the estimated influence 
-       	     functions of as the variance estimates. 
+Description: The package implements the propensity score weighted estimators for several 
+	     causal estimands from the classes of weighted ATE, weighted ATT and weighted ATC. 
 Imports:
 	SuperLearner, 
-	tidyverse,
-	caret
+	tidyverse
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
