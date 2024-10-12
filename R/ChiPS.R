@@ -2,6 +2,7 @@
 #' @param A vector of the treatment variable (binary, valued from 0 and 1)
 #' @param Y vector of the outcome variable (can be various types: continous, categorical, etc., but must be numerical)
 #' @param X matrix of covariates/confounders that are included into the propensity score model
+#' @param ps.library method(s) used for fitting the propensity score model, adopted from methods and their ensemble (input multiple methods in a vector) by the SuperLearner package; default is "SL.glm"
 #' @param beta whether to include estimands from beta family weights; if so, the v parameter below is required to be specified
 #' @param v model parameter for beta weights
 #' @param trim whether to include trimming; if so, the trim.alpha parameter below needs to be specified
