@@ -12,15 +12,15 @@ To install the latest version of the R package from GitHub, please this code in 
 
 ```r
 if (!require("devtools")) install.packages("devtools")
-devtools::install_github("yiliu1998/Chips")
+devtools::install_github("yiliu1998/ChiPS")
 ```
 
 ## Usage
-The package contains a main function `Chips()`. The input data of the function should be observational data with a binary treatment (`A`, valued from 0 and 1), an outcome variable (`Y`) and covariate matrix or data frame (`X`). Once the package is downloaded, please use the following code to view more detailed use of the package:
+The package contains a main function `ChiPS()`. The input data of the function should be observational data with a binary treatment (`A`, valued from 0 and 1), an outcome variable (`Y`) and covariate matrix or data frame (`X`). Once the package is downloaded, please use the following code to view more detailed use of the package:
 
 ```r
-library(Chips)
-?Chips
+library(ChiPS)
+?ChiPS
 ```
 As a remark, the current version of the package assumes **no missing data** in the input dataset. Therefore, if your data contain any missing values, we suggest either to conduct a complete-case analysis (e.g., if the missingness rate is small), or impute the missing data first using some existing methods such as multiple imputation. 
 
