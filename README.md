@@ -3,6 +3,8 @@
 
 To implement the PSW estimator, we first model the propensity score using the whole dataset, predict its values on all participants (estimate-then-plug-in). The variance estimation is by nonparametric bootstrap (see [Efron (1992)](https://link.springer.com/chapter/10.1007/978-1-4612-4380-9_41)). For the model used for the propensity score, we allow conventional parametric models such as the logistic regression or other nonparametric and machine learning models through the `SuperLearner` package. Please see [Van der Laan et a. (2007)](https://www.degruyter.com/document/doi/10.2202/1544-6115.1309/html) and [Polley et al. (2010)](https://biostats.bepress.com/ucbbiostat/paper266/?TB_iframe=true&width=370.8&height=658) for details about the `SuperLearner`. Using `SuperLearner::listWrappers()` in R can output all available options for modelling the propensity score. 
 
+The use of nonparametric machine learning models and methods ensemble in `SuperLearner` can be time-consuming and computationally heavy in your experiments. As such, we recommend users to employ parallel computation in their simulation studies. Please visit [this page](https://cran.r-project.org/web/packages/doParallel/vignettes/gettingstartedParallel.pdf) for helpful information about how to conduct parallel computing in R for saving running time. 
+
 ## Installation
 To install the latest version of the R package from GitHub, please this code in R:
 
