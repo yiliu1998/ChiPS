@@ -2,7 +2,6 @@
 #' @param A vector of the treatment variable (binary, valued from 0 and 1)
 #' @param Y vector of the outcome variable (can be various types: continous, categorical, etc., but must be numerical)
 #' @param X matrix of covariates/confounders that are included into the propensity score model
-#' @param ps.library method(s) used for fitting the propensity score model, adopted from methods and their ensemble (input multiple methods in a vector) by the SuperLearner package; default is "SL.glm"
 #' @param beta whether to include estimands from beta family weights; if so, the v parameter below is required to be specified
 #' @param v model parameter for beta weights
 #' @param trim whether to include trimming; if so, the trim.alpha parameter below needs to be specified
@@ -11,6 +10,7 @@
 #' @param trun.alpha the truncation threshold; default is .05
 #' @param boot whether to implement bootstrap for variance estimation; default is TRUE
 #' @param n.boot number of bootstrap, if boot==TRUE; default is 500
+#' @param return.psfig whether to plot and return the estimated propensity score distribution plots by treatment group
 #' @param seed seed for initializing the random number generator, which is used in set.seed() function; default is 4399
 #' @param conf.level level of confidence interval; default is .05 (for 0.95 confidence interval, using normal approximation)
 #' @return the function returns estimated causal estimands;
@@ -22,13 +22,31 @@ ChiPS <- function(A, Y, X,
                   trim=FALSE, trim.alpha=.05,
                   trun=FALSE, trun.alpha=.05,
                   boot=TRUE, n.boot=500,
+                  return.psfig=FALSE,
                   seed=4399,
                   conf.level=.05) {
 
+  set.seed(seed=seed)
   n <- length(A)
   X <- as.data.frame(X)
-  result <- .point.est(A=A, Y=Y, X=X,
-                       ps.library=ps.library,
+  e.h <- .propensity(A=A, Y=Y, X=X, X.pred=X, ps.library=ps.library)
+
+  if(return.psfig) {
+    df <- data.frame(A=A, e.h=e.h)
+    ps.hist <- ggplot(df, aes(x=e.h, fill=factor(A))) +
+      geom_histogram(position="identity", alpha=0.35, color="black", bins=35) +
+      labs(x="Estimated propensity score", y="Count") +
+      scale_fill_manual(values=c("darkblue", "coral"), name="Group") +
+      theme_minimal()
+
+    ps.density <- ggplot(df, aes(x=e.h, fill=factor(A))) +
+      geom_density(alpha=0.35) +
+      labs(x="Estimated propensity score", y="Count") +
+      scale_fill_manual(values=c("darkblue", "coral"), name="Group") +
+      theme_minimal()
+  }
+
+  result <- .point.est(A=A, Y=Y, X=X, e.h=e.h,
                        beta=beta, v=v,
                        trim=trim, trim.alpha=trim.alpha,
                        trun=trun, trun.alpha=trun.alpha)
@@ -41,9 +59,9 @@ ChiPS <- function(A, Y, X,
       A.bt <- A[bt.samp]
       Y.bt <- Y[bt.samp]
       X.bt <- X[bt.samp, ]
+      e.h <- .propensity(A=A.bt, X=X.bt, X.pred=X.bt, ps.library=ps.library)
 
-      all.result <- .point.est(A=A.bt, Y=Y.bt, X=X.bt,
-                               ps.library=ps.library,
+      all.result <- .point.est(A=A.bt, Y=Y.bt, X=X.bt, e.h=e.h,
                                beta=beta, v=v,
                                trim=trim, trim.alpha=trim.alpha,
                                trun=trun, trun.alpha=trun.alpha)
@@ -68,21 +86,24 @@ ChiPS <- function(A, Y, X,
     lwr.watt <- result$WATT - quant*sd.watt
     lwr.watc <- result$WATC - quant*sd.watc
 
-    return(list(df.WATE=data.frame(Est=result$WATE, Std.Err=sd.wate, Upr=upr.wate, Lwr=lwr.wate),
-                df.WATT=data.frame(Est=result$WATT, Std.Err=sd.watt, Upr=upr.watt, Lwr=lwr.watt),
-                df.WATC=data.frame(Est=result$WATC, Std.Err=sd.watc, Upr=upr.watc, Lwr=lwr.watc)))
+    if(return.psfig) {
+      return(list(df.WATE=data.frame(Est=result$WATE, Std.Err=sd.wate, Upr=upr.wate, Lwr=lwr.wate),
+                  df.WATT=data.frame(Est=result$WATT, Std.Err=sd.watt, Upr=upr.watt, Lwr=lwr.watt),
+                  df.WATC=data.frame(Est=result$WATC, Std.Err=sd.watc, Upr=upr.watc, Lwr=lwr.watc),
+                  ps.hist=ps.hist, ps.density=ps.density))
+    } else {
+      return(list(df.WATE=data.frame(Est=result$WATE, Std.Err=sd.wate, Upr=upr.wate, Lwr=lwr.wate),
+                  df.WATT=data.frame(Est=result$WATT, Std.Err=sd.watt, Upr=upr.watt, Lwr=lwr.watt),
+                  df.WATC=data.frame(Est=result$WATC, Std.Err=sd.watc, Upr=upr.watc, Lwr=lwr.watc)))
+    }
   }
 }
 
-.point.est <- function(A, Y, X,
+.point.est <- function(A, Y, X, e.h,
                        ps.library="SL.glm",
                        beta=FALSE, v=NA,
                        trim=FALSE, trim.alpha=.05,
                        trun=FALSE, trun.alpha=.05) {
-
-  # propensity score estimation
-  n <- length(A)
-  e.h <- .propensity(A=A, Y=Y, X=X, X.pred=X, ps.library=ps.library)
 
   # define the tilting functions
   weights <- c("overall", "treated", "control", "overlap", "matching", "entropy")
@@ -166,9 +187,9 @@ ChiPS <- function(A, Y, X,
   return(list(WATE=wate.est, WATT=watt.est, WATC=watc.est))
 }
 
-.propensity <- function(A, Y, X, X.pred, ps.library="SL.glm") {
+.propensity <- function(A, X, X.pred, ps.library="SL.glm") {
   X <- as.data.frame(X)
   fit <- SuperLearner(Y=A, X=X, family=binomial(), SL.library=ps.library)
   e.h <- predict(fit, X.pred, type="response")$pred
-  return(e.h)
+  return(e.h=e.h)
 }

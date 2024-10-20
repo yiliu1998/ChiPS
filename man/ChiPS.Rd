@@ -17,6 +17,7 @@ ChiPS(
   trun.alpha = 0.05,
   boot = TRUE,
   n.boot = 500,
+  return.psfig = FALSE,
   seed = 4399,
   conf.level = 0.05
 )
@@ -43,6 +44,8 @@ ChiPS(
 \item{boot}{whether to implement bootstrap for variance estimation; default is TRUE}
 
 \item{n.boot}{number of bootstrap, if boot==TRUE; default is 500}
+
+\item{return.psfig}{whether to plot and return the estimated propensity score distribution plots by treatment group}
 
 \item{seed}{seed for initializing the random number generator, which is used in set.seed() function; default is 4399}
 
