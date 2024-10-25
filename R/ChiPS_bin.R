@@ -1,6 +1,6 @@
-#' Causal inference via general estimands: the weighted ATE, weighted ATT and weighted ATC
+#' Causal inference via general estimands on binary outcomes: the weighted ATE, weighted ATT and weighted ATC
 #' @param A vector of the treatment variable (binary, valued from 0 and 1)
-#' @param Y vector of the outcome variable (can be various types: continous, categorical, etc., but must be numerical)
+#' @param Y vector of the binary outcome variable
 #' @param X matrix of covariates/confounders that are included into the propensity score model
 #' @param beta whether to include estimands from beta family weights; if so, the v parameter below is required to be specified
 #' @param v model parameter for beta weights
@@ -12,19 +12,21 @@
 #' @param n.boot number of bootstrap, if boot==TRUE; default is 500
 #' @param return.psfig whether to plot and return the estimated propensity score distribution plots by treatment group
 #' @param seed seed for initializing the random number generator, which is used in set.seed() function; default is 4399
-#' @param conf.level level of confidence interval; default is .05 (for 0.95 confidence interval, using normal approximation)
-#' @return the function returns estimated causal estimands;
+#' @param conf.level level of confidence interval; default is .05 (for 0.95 confidence interval, using quantile method in bootstrap)
+#' @return the function returns estimated causal estimands in the form of weighted risk difference (RD), risk ratio (RR) and odds ratio (OR);
 #'         estimands defined by constant weights, overlap weights, matching weights and entropy weights will always be returned;
 #'         whether to return estimands defined by trimming, truncation, and beta weights can be specified by user
-ChiPS <- function(A, Y, X,
-                  ps.library="SL.glm",
-                  beta=FALSE, v=NA,
-                  trim=FALSE, trim.alpha=.05,
-                  trun=FALSE, trun.alpha=.05,
-                  boot=TRUE, n.boot=500,
-                  return.psfig=FALSE,
-                  seed=4399,
-                  conf.level=.05) {
+ChiPS_bin <- function(A, Y, X,
+                      ps.library="SL.glm",
+                      beta=FALSE, v=NA,
+                      trim=FALSE, trim.alpha=.05,
+                      trun=FALSE, trun.alpha=.05,
+                      boot=TRUE, n.boot=500,
+                      seed=4399,
+                      return.psfig=FALSE,
+                      conf.level=.05) {
+
+  if(sum(unique(Y)!=c(0,1))!=0) { stop("The outcome must be binary in this function!") }
 
   set.seed(seed=seed)
   n <- length(A)
@@ -54,7 +56,9 @@ ChiPS <- function(A, Y, X,
 
   if(!boot) { return(result) }
   if(boot) {
-    watc.all <- watt.all <- wate.all <- NULL
+    watc.all.RD <- watt.all.RD <- wate.all.RD <- NULL
+    watc.all.RR <- watt.all.RR <- wate.all.RR <- NULL
+    watc.all.OR <- watt.all.OR <- wate.all.OR <- NULL
     for(i in 1:n.boot) {
       bt.samp <- sample(1:n, n, replace=T)
       A.bt <- A[bt.samp]
@@ -67,29 +71,57 @@ ChiPS <- function(A, Y, X,
                                trim=trim, trim.alpha=trim.alpha,
                                trun=trun, trun.alpha=trun.alpha)
 
-      wate.all <- rbind(all.result$WATE, wate.all)
-      watt.all <- rbind(all.result$WATT, watt.all)
-      watc.all <- rbind(all.result$WATC, watc.all)
+      wate.all.RD <- rbind(all.result$RD.wate, wate.all.RD)
+      watt.all.RD <- rbind(all.result$RD.watt, watt.all.RD)
+      watc.all.RD <- rbind(all.result$RD.watc, watc.all.RD)
+
+      wate.all.RR <- rbind(all.result$RR.wate, wate.all.RR)
+      watt.all.RR <- rbind(all.result$RR.watt, watt.all.RR)
+      watc.all.RR <- rbind(all.result$RR.watc, watc.all.RR)
+
+      wate.all.OR <- rbind(all.result$OR.wate, wate.all.OR)
+      watt.all.OR <- rbind(all.result$OR.watt, watt.all.OR)
+      watc.all.OR <- rbind(all.result$OR.watc, watc.all.OR)
 
       if(i%%50==0) print(paste0("Bootstrap ", i, " is done."))
     }
-    sd.wate <- apply(wate.all, 2, sd, na.rm=T)
-    sd.watt <- apply(watt.all, 2, sd, na.rm=T)
-    sd.watc <- apply(watc.all, 2, sd, na.rm=T)
+    quant <- 1-conf.level/2
 
-    quant <- qnorm(1-conf.level/2)
+    upr.wate.RD <- apply(wate.all.RD, 2, quantile, quant)
+    upr.watt.RD <- apply(watt.all.RD, 2, quantile, quant)
+    upr.watc.RD <- apply(watc.all.RD, 2, quantile, quant)
 
-    upr.wate <- result$WATE + quant*sd.wate
-    upr.watt <- result$WATT + quant*sd.watt
-    upr.watc <- result$WATC + quant*sd.watc
+    lwr.wate.RD <- apply(wate.all.RD, 2, quantile, 1-quant)
+    lwr.watt.RD <- apply(watt.all.RD, 2, quantile, 1-quant)
+    lwr.watc.RD <- apply(watc.all.RD, 2, quantile, 1-quant)
 
-    lwr.wate <- result$WATE - quant*sd.wate
-    lwr.watt <- result$WATT - quant*sd.watt
-    lwr.watc <- result$WATC - quant*sd.watc
+    upr.wate.RR <- apply(wate.all.RR, 2, quantile, quant)
+    upr.watt.RR <- apply(watt.all.RR, 2, quantile, quant)
+    upr.watc.RR <- apply(watc.all.RR, 2, quantile, quant)
 
-    return(list(df.WATE=data.frame(Est=result$WATE, Std.Err=sd.wate, Upr=upr.wate, Lwr=lwr.wate),
-                df.WATT=data.frame(Est=result$WATT, Std.Err=sd.watt, Upr=upr.watt, Lwr=lwr.watt),
-                df.WATC=data.frame(Est=result$WATC, Std.Err=sd.watc, Upr=upr.watc, Lwr=lwr.watc)))
+    lwr.wate.RR <- apply(wate.all.RR, 2, quantile, 1-quant)
+    lwr.watt.RR <- apply(watt.all.RR, 2, quantile, 1-quant)
+    lwr.watc.RR <- apply(watc.all.RR, 2, quantile, 1-quant)
+
+    upr.wate.OR <- apply(wate.all.OR, 2, quantile, quant)
+    upr.watt.OR <- apply(watt.all.OR, 2, quantile, quant)
+    upr.watc.OR <- apply(watc.all.OR, 2, quantile, quant)
+
+    lwr.wate.OR <- apply(wate.all.OR, 2, quantile, 1-quant)
+    lwr.watt.OR <- apply(watt.all.OR, 2, quantile, 1-quant)
+    lwr.watc.OR <- apply(watc.all.OR, 2, quantile, 1-quant)
+
+    return(list(df.WATE.RD=data.frame(Est=result$RD.wate, Upr=upr.wate.RD, Lwr=lwr.wate.RD),
+                df.WATT.RD=data.frame(Est=result$RD.watt, Upr=upr.watt.RD, Lwr=lwr.watt.RD),
+                df.WATC.RD=data.frame(Est=result$RD.watc, Upr=upr.watc.RD, Lwr=lwr.watc.RD),
+
+                df.WATE.RR=data.frame(Est=result$RR.wate, Upr=upr.wate.RR, Lwr=lwr.wate.RR),
+                df.WATT.RR=data.frame(Est=result$RR.watt, Upr=upr.watt.RR, Lwr=lwr.watt.RR),
+                df.WATC.RR=data.frame(Est=result$RR.watc, Upr=upr.watc.RR, Lwr=lwr.watc.RR),
+
+                df.WATE.OR=data.frame(Est=result$OR.wate, Upr=upr.wate.OR, Lwr=lwr.wate.OR),
+                df.WATT.OR=data.frame(Est=result$OR.watt, Upr=upr.watt.OR, Lwr=lwr.watt.OR),
+                df.WATC.OR=data.frame(Est=result$OR.watc, Upr=upr.watc.OR, Lwr=lwr.watc.OR)))
   }
 }
 
@@ -173,16 +205,30 @@ ChiPS <- function(A, Y, X,
   Y.mat <- matrix(Y, ncol=M, nrow=n)
   A.mat <- matrix(A, ncol=M, nrow=n)
 
-  wate.est <- apply(A.mat*IPW.ate*tilt.wate*Y.mat, 2, sum) / apply(A.mat*IPW.ate*tilt.wate, 2, sum) -
-    apply((1-A.mat)*IPW.ate*tilt.wate*Y.mat, 2, sum) / apply((1-A.mat)*IPW.ate*tilt.wate, 2, sum)
+  p1h <- apply(A.mat*IPW.ate*tilt.wate*Y.mat, 2, sum) / apply(A.mat*IPW.ate*tilt.wate, 2, sum)
+  p0h <- apply((1-A.mat)*IPW.ate*tilt.wate*Y.mat, 2, sum) / apply((1-A.mat)*IPW.ate*tilt.wate, 2, sum)
 
-  watt.est <- apply(A.mat*IPW.att*tilt.watt*Y.mat, 2, sum) / apply(A.mat*IPW.att*tilt.watt, 2, sum) -
-    apply((1-A.mat)*IPW.att*tilt.watt*Y.mat, 2, sum) / apply((1-A.mat)*IPW.att*tilt.watt, 2, sum)
+  p1 <- apply(A.mat*IPW.att*tilt.watt*Y.mat, 2, sum) / apply(A.mat*IPW.att*tilt.watt, 2, sum)
+  p0g <- apply((1-A.mat)*IPW.att*tilt.watt*Y.mat, 2, sum) / apply((1-A.mat)*IPW.att*tilt.watt, 2, sum)
 
-  watc.est <- apply(A.mat*IPW.atc*tilt.watc*Y.mat, 2, sum) / apply(A.mat*IPW.atc*tilt.watc, 2, sum) -
-    apply((1-A.mat)*IPW.atc*tilt.watc*Y.mat, 2, sum) / apply((1-A.mat)*IPW.atc*tilt.watc, 2, sum)
+  p1g <- apply(A.mat*IPW.atc*tilt.watc*Y.mat, 2, sum) / apply(A.mat*IPW.atc*tilt.watc, 2, sum)
+  p0 <- apply((1-A.mat)*IPW.atc*tilt.watc*Y.mat, 2, sum) / apply((1-A.mat)*IPW.atc*tilt.watc, 2, sum)
 
-  return(list(WATE=wate.est, WATT=watt.est[-c(2,3)], WATC=watc.est[-c(2,3)]))
+  RD.wate <- p1h - p0h
+  RR.wate <- p1h/p0h
+  OR.wate <- p1h*(1-p0h) / (p0h*(1-p1h))
+
+  RD.watt <- p1 - p0g
+  RR.watt <- p1/p0g
+  OR.watt <- p1*(1-p0g) / (p0g*(1-p1))
+
+  RD.watc <- p1g - p0
+  RR.watc <- p1g/p0
+  OR.watc <- p1g*(1-p0) / (p0*(1-p1g))
+
+  return(list(RD.wate=RD.wate, RR.wate=RR.wate, OR.wate=OR.wate,
+              RD.watt=RD.watt[-c(2,3)], RR.watt=RR.watt[-c(2,3)], OR.watt=OR.watt[-c(2,3)],
+              RD.watc=RD.watc[-c(2,3)], RR.watc=RR.watc[-c(2,3)], OR.watc=OR.watc[-c(2,3)]))
 }
 
 .propensity <- function(A, Y, X, X.pred, ps.library="SL.glm") {

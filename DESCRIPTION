@@ -7,12 +7,15 @@ Authors@R: c(
 			email="yi.iu.biostat@gmail.com", 
 			ole=c("aut", "cre"),
 			comment=c(ORCID="0000-0002-0935-007X")),
-	person("Ying", "Gao", 
-			email="yinggaoamber@outlook.com", 
-			role="aut"),
 	person("Yuan", "Wang", 
 			email="2000yuan.wang@gmail.com", 
 			role="aut"),
+	person("Ying", "Gao", 
+			email="yinggaoamber@outlook.com", 
+			role="aut"),
+        person("Tonia", "Poteat", 
+			email="tonia.poteat@duke.edu", 
+			role="aut"), 
 	person("Roland", "Matsouaka", 
 			email="roland.matsouaka@duke.edu", 
 			role="aut",
@@ -20,6 +23,8 @@ Authors@R: c(
 Maintainer: Yi Liu <yi.iu.biostat@gmail.com>
 Description: The package implements the propensity score weighted estimators for several 
 	     causal estimands from the classes of weighted ATE, weighted ATT and weighted ATC. 
+             For binary outcomes, we also extend the methods to output the results on weighted 
+             risk ratio (RR), weighted risk ratio (RR) and weighted odds ratio (OR). 
 Imports:
 	SuperLearner, 
 	tidyverse
