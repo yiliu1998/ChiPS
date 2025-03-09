@@ -5,8 +5,6 @@ To implement the PSW estimator, we first model the propensity score using the wh
 
 The use of nonparametric machine learning models and methods ensemble in `SuperLearner` can be time-consuming and computationally heavy in your experiments. As such, we recommend users to employ parallel computation in their simulation studies. Please visit [this page](https://cran.r-project.org/web/packages/doParallel/vignettes/gettingstartedParallel.pdf) for helpful information about how to conduct parallel computing in R for saving running time. 
 
-Our package also output the plots of propensity score distributions by treatment group, covariate balancing (the loveplot by absolute standardized mean difference [ASMD]), and effective sample size (ESS), which are standard practices in causal inference for checking covariate balance and examine the method efficiency. 
-
 ## Installation
 To install the latest version of the R package from GitHub, please this code in R:
 
