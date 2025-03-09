@@ -26,7 +26,7 @@ ChiPS_bin <- function(A, Y, X,
                       return.psfig=FALSE,
                       conf.level=.05) {
 
-  if(sum(unique(Y)!=c(0,1))!=0) { stop("The outcome must be binary in this function!") }
+  if(sum(sort(unique(Y))!=c(0,1))!=0) { stop("The outcome must be binary in this function!") }
 
   set.seed(seed=seed)
   n <- length(A)
