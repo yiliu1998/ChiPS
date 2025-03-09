@@ -5,7 +5,7 @@ Version: 1.1
 Authors@R: c(
   	person("Yi", "Liu", 
 			email="yi.iu.biostat@gmail.com", 
-			ole=c("aut", "cre"),
+			role=c("aut", "cre"),
 			comment=c(ORCID="0000-0002-0935-007X")),
 	person("Yuan", "Wang", 
 			email="2000yuan.wang@gmail.com", 
