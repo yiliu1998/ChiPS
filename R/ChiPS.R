@@ -4,7 +4,8 @@
 #' @param X matrix of covariates/confounders that are included into the propensity score model
 #' @param beta whether to include estimands from beta family weights; if so, the v parameter below is required to be specified
 #' @param v model parameter for beta weights
-#' @param trim whether to include trimming; if so, the trim.alpha parameter below needs to be specified
+#' @param trim whether to include trimming; if so, the trim.reEST and trim.alpha parameter below needs to be specified
+#' @param trim.reEST whether to re-estimate the PS after trimming, if TRUE, both results by re-estimating the PS or not will be returned
 #' @param trim.alpha the trimming threshold; default is .05
 #' @param trun whether to include truncation; if so, the trun.alpha parameter below needs to be specified
 #' @param trun.alpha the truncation threshold; default is .05
@@ -19,7 +20,7 @@
 ChiPS <- function(A, Y, X,
                   ps.library="SL.glm",
                   beta=FALSE, v=NA,
-                  trim=FALSE, trim.alpha=.05,
+                  trim=FALSE, trim.reEST=FALSE, trim.alpha=.05,
                   trun=FALSE, trun.alpha=.05,
                   boot=TRUE, n.boot=500,
                   return.psfig=FALSE,
@@ -96,12 +97,12 @@ ChiPS <- function(A, Y, X,
 .point.est <- function(A, Y, X,
                        ps.library="SL.glm",
                        beta=FALSE, v=NA,
-                       trim=FALSE, trim.alpha=.05,
+                       trim=FALSE, trim.reEST=FALSE, trim.alpha=.05,
                        trun=FALSE, trun.alpha=.05) {
 
   # propensity score estimation
   n <- length(A)
-  e.h <- .propensity(A=A, Y=Y, X=X, X.pred=X, ps.library=ps.library)
+  e.h <- .propensity(A=A, X=X, X.pred=X, ps.library=ps.library)
 
   # define the tilting functions
   weights <- c("overall", "treated", "control", "overlap", "matching", "entropy")
@@ -130,8 +131,7 @@ ChiPS <- function(A, Y, X,
     trim.alpha <- trim.alpha[!is.na(trim.alpha)]
     if(length(trim.alpha)>0) {
       weights <- c(weights, paste0("trimming (alpha=", trim.alpha, ")"))
-      tilt.trim.wate <- tilt.trim.watt <- tilt.trim.watc <-
-        matrix(NA, nrow=n, ncol=length(trim.alpha))
+      tilt.trim.wate <- tilt.trim.watt <- tilt.trim.watc <- matrix(NA, nrow=n, ncol=length(trim.alpha))
       for(i in 1:length(trim.alpha)) {
         tilt.trim.wate[,i] <- as.numeric(e.h<1-trim.alpha[i] & e.h>trim.alpha[i])
         tilt.trim.watt[,i] <- as.numeric(e.h<1-trim.alpha[i])*(1-A) + A
@@ -140,6 +140,19 @@ ChiPS <- function(A, Y, X,
       tilt.wate <- cbind(tilt.wate, tilt.trim.wate)
       tilt.watt <- cbind(tilt.watt, tilt.trim.watt)
       tilt.watc <- cbind(tilt.watc, tilt.trim.watc)
+
+      if(trim.reEST) {
+        weights <- c(weights, paste0("trimming (re-est PS, alpha=", trim.alpha, ")"))
+        tilt.trim.reEST.wate <- tilt.trim.reEST.watt <- tilt.trim.reEST.watc <- matrix(NA, nrow=n, ncol=length(trim.alpha))
+        for(i in 1:length(trim.alpha)) {
+          tilt.trim.reEST.wate[,i] <- as.numeric(e.h<1-trim.alpha[i] & e.h>trim.alpha[i])
+          tilt.trim.reEST.watt[,i] <- as.numeric(e.h<1-trim.alpha[i])*(1-A) + A
+          tilt.trim.reEST.watc[,i] <- as.numeric(e.h>trim.alpha[i])*A + (1-A)
+        }
+        tilt.wate <- cbind(tilt.wate, tilt.trim.reEST.wate)
+        tilt.watt <- cbind(tilt.watt, tilt.trim.reEST.watt)
+        tilt.watc <- cbind(tilt.watc, tilt.trim.reEST.watc)
+      }
     }
   }
 
@@ -182,10 +195,35 @@ ChiPS <- function(A, Y, X,
   watc.est <- apply(A.mat*IPW.atc*tilt.watc*Y.mat, 2, sum) / apply(A.mat*IPW.atc*tilt.watc, 2, sum) -
     apply((1-A.mat)*IPW.atc*tilt.watc*Y.mat, 2, sum) / apply((1-A.mat)*IPW.atc*tilt.watc, 2, sum)
 
+  if(trim.reEST) {
+    for(i in 1:length(trim.alpha)) {
+      A.wate <- A[tilt.trim.reEST.wate[,i]==1]
+      A.watt <- A[tilt.trim.reEST.watt[,i]==1]
+      A.watc <- A[tilt.trim.reEST.watc[,i]==1]
+
+      Y.wate <- Y[tilt.trim.reEST.wate[,i]==1]
+      Y.watt <- Y[tilt.trim.reEST.watt[,i]==1]
+      Y.watc <- Y[tilt.trim.reEST.watc[,i]==1]
+
+      X.wate <- X[tilt.trim.reEST.wate[,i]==1,]
+      X.watt <- X[tilt.trim.reEST.watt[,i]==1,]
+      X.watc <- X[tilt.trim.reEST.watc[,i]==1,]
+
+      e.h.wate <- .propensity(A=A.wate, X=X.wate, X.pred=X.wate, ps.library=ps.library)
+      e.h.watt <- .propensity(A=A.watt, X=X.watt, X.pred=X.watt, ps.library=ps.library)
+      e.h.watc <- .propensity(A=A.wate, X=X.watc, X.pred=X.watc, ps.library=ps.library)
+
+      k <- length(weights)-length(trim.alpha)+i
+      wate.est[k] <- sum(A.wate/e.h.wate * Y.wate)/sum(A.wate/e.h.wate) - sum((1-A.wate)/(1-e.h.wate) * Y.wate)/sum((1-A.wate)/(1-e.h.wate))
+      watt.est[k] <- sum(A.watt * Y.watt)/sum(A.watt) - sum((1-A.watt)*e.h.watt/(1-e.h.watt) * Y.watt)/sum((1-A.watt)*e.h.watt/(1-e.h.watt))
+      watc.est[k] <- sum(A.watc*(1-e.h.watc)/e.h.watc * Y.watc)/sum(A.watc*(1-e.h.watc)/e.h.watc) - sum((1-A.watc) * Y.watc)/sum(1-A.watc)
+    }
+  }
+
   return(list(WATE=wate.est, WATT=watt.est[-c(2,3)], WATC=watc.est[-c(2,3)]))
 }
 
-.propensity <- function(A, Y, X, X.pred, ps.library="SL.glm") {
+.propensity <- function(A, X, X.pred, ps.library="SL.glm") {
   X <- as.data.frame(X)
   fit <- SuperLearner(Y=A, X=X, family=binomial(), SL.library=ps.library)
   e.h <- predict(fit, X.pred, type="response")$pred
