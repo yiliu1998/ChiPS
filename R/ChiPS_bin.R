@@ -32,7 +32,7 @@ ChiPS_bin <- function(A, Y, X,
   set.seed(seed=seed)
   n <- length(A)
   X <- as.data.frame(X)
-  e.h <- .propensity(A=A, Y=Y, X=X, X.pred=X, ps.library=ps.library)
+  e.h <- .propensity(A=A, X=X, X.pred=X, ps.library=ps.library)
 
   if(return.psfig) {
     df <- data.frame(A=A, e.h=e.h)
@@ -272,7 +272,7 @@ ChiPS_bin <- function(A, Y, X,
               RD.watc=RD.watc[-c(2,3)], RR.watc=RR.watc[-c(2,3)], OR.watc=OR.watc[-c(2,3)]))
 }
 
-.propensity <- function(A, Y, X, X.pred, ps.library="SL.glm") {
+.propensity <- function(A, X, X.pred, ps.library="SL.glm") {
   X <- as.data.frame(X)
   fit <- SuperLearner(Y=A, X=X, family=binomial(), SL.library=ps.library)
   e.h <- predict(fit, X.pred, type="response")$pred
