@@ -30,7 +30,7 @@ ChiPS <- function(A, Y, X,
   set.seed(seed=seed)
   n <- length(A)
   X <- as.data.frame(X)
-  e.h <- .propensity(A=A, Y=Y, X=X, X.pred=X, ps.library=ps.library)
+  e.h <- .propensity(A=A, X=X, X.pred=X, ps.library=ps.library)
 
   if(return.psfig) {
     df <- data.frame(A=A, e.h=e.h)
