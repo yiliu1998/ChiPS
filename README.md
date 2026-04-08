@@ -27,4 +27,5 @@ The R code is maintained by Yi Liu (Please feel free to reach out at yi.liu.bios
 
 ## Reference
 Please cite the following paper:
-TBA
+
+Liu, Y., Wang, Y., Gao, Y., Poteat, T., & Matsouaka, R. A. (2025). A tutorial for propensity score weighting methods under violations of the positivity assumption. Statistics in Medicine, 44(28-30), e70329.
